@@ -1,0 +1,15 @@
+{
+    "id": "{C7F33B95-D4B2-9967-CB9D-6862CC753142}",
+    "name": "Illumination",
+    "type": 3,
+    "vendor": "Hijmering",
+    "aliases":
+    [
+        "Verlichting"
+    ],
+    "url": "https://www.symcon.de",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "IL"
+}

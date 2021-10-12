@@ -1,0 +1,45 @@
+{ 
+    "elements": [
+        {
+            "type" : "SelectVariable" , 
+            "name" : "BufferVar" , 
+            "caption" : "Current TempSensor" 
+        },
+        {
+            "type" : "SelectInstance" , 
+            "name" : "TelegramVar" , 
+            "caption" : "TelegramBot Instance" 
+        },
+        {  
+            "type" : "NumberSpinner", 
+            "name" : "MaxTemp",  
+            "caption" : "Maximum Temp"  
+        },
+        {  
+            "type" : "NumberSpinner", 
+            "name" : "MinTemp",  
+            "caption" : "Minimal Temp"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "UpdateInterval" ,  
+            "caption" : "Update Interval in Seconds"  
+        },
+        {  
+            "type" : "ValidationTextBox" , 
+            "name" : "DomoticzIP" ,  
+            "caption" : "Domoticz IP"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "DomoticzPort" ,  
+            "caption" : "Domoticz Port"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "Domoticzidx" ,  
+            "caption" : "Domoticz Idx"  
+        }
+            
+    ]
+}

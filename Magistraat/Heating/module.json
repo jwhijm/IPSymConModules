@@ -1,0 +1,15 @@
+{
+    "id": "{11F5CE26-89E4-1CBD-B3AC-DD0B34E4357C}",
+    "name": "Heating",
+    "type": 3,
+    "vendor": "Hijmering",
+    "aliases":
+    [
+        "PelletKachel"
+    ],
+    "url": "https://www.symcon.de",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "HT"
+}

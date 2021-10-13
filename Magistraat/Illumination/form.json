@@ -1,0 +1,52 @@
+{ 
+    "elements": [
+        {
+            "type": "List",
+            "name": "Devices",
+            "caption": "Devices",
+            "rowCount": 10,
+            "add": true,
+            "delete": true,
+            "sort": {
+                "column": "InstanceID",
+                "direction": "ascending"
+            },
+            "columns": [{
+                "caption": "InstanceID",
+                "name": "InstanceID", 
+                "width": "auto",
+                "add": 0,
+                "edit": {
+                    "type": "SelectInstance"
+                }
+            }, {
+                "caption": "State",
+                "name": "State",
+                "width": "60px",
+                "add": "New!"
+            }
+            ]
+        },
+        {
+            "type" : "SelectVariable" , 
+            "name" : "RemoteControl" , 
+            "caption" : "Remote Controle Var" 
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "RCUpdateInterval" ,  
+            "caption" : "RemoteControl Pol Interval in Seconds"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "DLUpdateInterval" ,  
+            "caption" : "Daylight Pol Interval in Seconds"  
+        }
+
+
+
+
+
+    ]
+
+}

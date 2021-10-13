@@ -14,6 +14,9 @@ class Illumination extends IPSModule
 
         $this->RegisterPropertyInteger("DLUpdateInterval", 60);
         $this->RegisterTimer("UpdateDL", 0, 'IL_Daylight(' . $this->InstanceID . ');');
+
+        $this->RegisterVariableBoolean("AllSwitch", "Verlichting", "~Switch");
+        $this->EnableAction("AllSwitch");
     }
 
     // IPS_ApplyChanges($id) 
@@ -24,6 +27,16 @@ class Illumination extends IPSModule
         $this->SetTimerInterval("UpdateDL", $this->ReadPropertyInteger("DLUpdateInterval") * 1000);
     }
 
+    public function RequestAction($ident, $value)
+    {
+        //TODO Set State correct if Switch by other function.
+        $this->SetValue($ident, $value);
+        if ($value) {
+            $this->SwitchDevices(true);
+        } else {
+            $this->SwitchDevices(false);
+        }
+    }
     /**
      * This Function are providing the Action functions
      *

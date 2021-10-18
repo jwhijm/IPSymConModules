@@ -7,16 +7,19 @@ class Illumination extends IPSModule
     {
         parent::Create();
         $this->RegisterPropertyString("Devices", "");
+        $this->RegisterPropertyString("LxSensors", "");
         $this->RegisterPropertyInteger("RemoteControl", 0);
 
         $this->RegisterPropertyInteger("RCUpdateInterval", 60);
         $this->RegisterTimer("UpdateRC", 0, 'IL_RemoteControl(' . $this->InstanceID . ');');
 
         $this->RegisterPropertyInteger("DLUpdateInterval", 60);
-        $this->RegisterTimer("UpdateDL", 0, 'IL_Daylight(' . $this->InstanceID . ');');
+        $this->RegisterTimer("UpdateDL", 0, 'IL_GetAvgIllumination(' . $this->InstanceID . ');');
 
         $this->RegisterVariableBoolean("AllSwitch", "Verlichting", "~Switch");
         $this->EnableAction("AllSwitch");
+
+        $this->RegisterVariableFloat("Totallx", "Illumination", "~Illumination.F", 2);
     }
 
     // IPS_ApplyChanges($id) 
@@ -29,7 +32,6 @@ class Illumination extends IPSModule
 
     public function RequestAction($ident, $value)
     {
-        //TODO Set State correct if Switch by other function.
         $this->SetValue($ident, $value);
         if ($value) {
             $this->SwitchDevices(true);
@@ -38,7 +40,8 @@ class Illumination extends IPSModule
         }
     }
     /**
-     * This Function are providing the Action functions
+     * This Function are providing the Actions To Switch the devices On or Off
+     * Depanding on the Given $action.
      *
      * IL_SwitchDevices($id);
      *
@@ -47,6 +50,7 @@ class Illumination extends IPSModule
     {
         $arrString = $this->ReadPropertyString("Devices");
         $json = json_decode($arrString);
+
 
         //echo $json[0]->InstanceID;
         foreach ($json as $device) {
@@ -63,10 +67,12 @@ class Illumination extends IPSModule
                 IPS_LogMessage("Illumination", "Unsupported Device Id : $devicevar");
             }
         }
+
+        $this->SetValue("AllSwitch", $action);
     }
 
     /**
-     * This Function are providing the Action functions
+     * This Function are providing the Action From the Remotecontrol
      *
      * IL_RemoteControl($id);
      *
@@ -122,13 +128,27 @@ class Illumination extends IPSModule
                 break;
         }
     }
+
     /**
-     * This Function are providing the Action functions
+     * This Function is Calculation the avg Illumination functions
      *
      * IL_Daylight($id);
      *
      */
-    public function Daylight()
+    public function GetAvgIllumination()
     {
+        $arrString = $this->ReadPropertyString("LxSensors");
+        $json = json_decode($arrString);
+        $totallx = 0.0;
+
+        //echo $json[0]->InstanceID;
+        foreach ($json as $device) {
+            $value = GetValueFloat($device->VarID);
+            $weight = $device->Weight;
+            $totallx += $value *  $weight;
+        }
+
+        $totallx = $totallx / count($json);
+        $this->SetValue("Totallx", $totallx);
     }
 }

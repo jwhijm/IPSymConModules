@@ -28,6 +28,38 @@
             ]
         },
         {
+            "type": "List",
+            "name": "LxSensors",
+            "caption": "LightSensors",
+            "rowCount": 5,
+            "add": true,
+            "delete": true,
+            "sort": {
+                "column": "VarID",
+                "direction": "ascending"
+            },
+            "columns": [{
+                "caption": "VariableID",
+                "name": "VarID", 
+                "width": "auto",
+                "add": 0,
+                "edit": {
+                    "type": "SelectVariable"
+                }
+            },
+            {
+                "caption": "Weight",
+                "name": "Weight", 
+                "width": "60px",
+                "add": 0,
+                "edit": {
+                    "type": "NumberSpinner"
+                }
+            }
+            ]
+        },
+        
+        {
             "type" : "SelectVariable" , 
             "name" : "RemoteControl" , 
             "caption" : "Remote Controle Var" 

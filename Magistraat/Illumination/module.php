@@ -11,15 +11,29 @@ class Illumination extends IPSModule
         $this->RegisterPropertyInteger("RemoteControl", 0);
 
         $this->RegisterPropertyInteger("RCUpdateInterval", 60);
+
         $this->RegisterTimer("UpdateRC", 0, 'IL_RemoteControl(' . $this->InstanceID . ');');
 
         $this->RegisterPropertyInteger("DLUpdateInterval", 60);
         $this->RegisterTimer("UpdateDL", 0, 'IL_GetAvgIllumination(' . $this->InstanceID . ');');
+        $this->RegisterTimer("AutomationTimer", 0, 'IL_Automation(' . $this->InstanceID . ');');
 
         $this->RegisterVariableBoolean("AllSwitch", "Verlichting", "~Switch");
         $this->EnableAction("AllSwitch");
 
+        $this->RegisterPropertyFloat("DarkLuxValue", 20);
+        $this->RegisterPropertyString("MorningOnTime", json_encode(array("hour" => 6, "minute" => 0, "second" => 0), true));
+        $this->RegisterPropertyString("MorningMaxOffTime", json_encode(array("hour" => 8, "minute" => 30, "second" => 0), true));
+        $this->RegisterPropertyString("AfternoonSwitchTime", json_encode(array("hour" => 16, "minute" => 0, "second" => 0), true));
+        $this->RegisterPropertyString("AfternoonMaxOnTime", json_encode(array("hour" => 1, "minute" => 30, "second" => 0), true));
+
         $this->RegisterVariableFloat("Totallx", "Illumination", "~Illumination.F", 2);
+
+        $this->RegisterAttributeBoolean("ToDark", false);
+        $this->RegisterAttributeBoolean("Present", false);
+
+        //$this->EnableAction(11581);
+
     }
 
     // IPS_ApplyChanges($id) 
@@ -28,6 +42,8 @@ class Illumination extends IPSModule
         parent::ApplyChanges();
         $this->SetTimerInterval("UpdateRC", $this->ReadPropertyInteger("RCUpdateInterval") * 1000);
         $this->SetTimerInterval("UpdateDL", $this->ReadPropertyInteger("DLUpdateInterval") * 1000);
+        $this->SetTimerInterval("AutomationTimer", $this->ReadPropertyInteger("DLUpdateInterval") * 1000);
+        //echo json_decode($this->ReadPropertyString("AfternoonMaxOnTime"));
     }
 
     public function RequestAction($ident, $value)
@@ -39,6 +55,118 @@ class Illumination extends IPSModule
             $this->SwitchDevices(false);
         }
     }
+
+    /**
+     * This Function are providing the Automation To Switch the devices On or Off
+     * Depanding on the Given $action.
+     *
+     * IL_Automation($id);
+     *
+     */
+    public function Automation()
+    {
+        //return;
+        $currentlux = $this->GetValue("Totallx");
+        $dark = $this->ReadAttributeBoolean("ToDark");
+        $present = $this->ReadAttributeBoolean("Present");
+
+        if (($currentlux <= $this->ReadPropertyFloat("DarkLuxValue")) && (!$dark)) {
+            $this->WriteAttributeBoolean("ToDark", true);
+            IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
+        } else if ($dark) {
+            $this->WriteAttributeBoolean("ToDark", false);
+            IPS_LogMessage("Illumination", "Set ToDark Attrubute to False. Current lux : $currentlux");
+        }
+
+        $morningontime = json_decode($this->ReadPropertyString("MorningOnTime"), true);
+        $morningofftime = json_decode($this->ReadPropertyString("MorningMaxOffTime"), true);
+        $afternoonontime = json_decode($this->ReadPropertyString("AfternoonSwitchTime"), true);
+        $eveningofftime = json_decode($this->ReadPropertyString("AfternoonMaxOnTime"), true);
+        $currenthour = date("H");
+
+        //Morning
+        if ($currenthour >= 4 && $currenthour <= 12) {
+            if (
+                $this->InTimeSlot($morningontime, $morningofftime) &&
+                ($this->GetValue("AllSwitch") == false)
+            ) {
+                IPS_LogMessage("Illumination", "Turn Illumination ON Morning");
+                $this->SwitchDevices(true);
+                return;
+            }
+
+            if ((!$dark && (($this->GetValue("AllSwitch") == true))) ||
+                (!$this->InTimeSlot($morningontime, $morningofftime) &&
+                    ($this->GetValue("AllSwitch") == true))
+            ) {
+                IPS_LogMessage("Illumination", "Turn Illumination OFF Morning");
+                $this->SwitchDevices(false);
+                return;
+            }
+        }
+
+        //Evening
+        if ($currenthour >= 12 && $currenthour <= 23) {
+            $maxevening = array("hour" => "23", "minute" => "59", "second" => "59");
+            if (
+                $this->InTimeSlot($afternoonontime, $maxevening) &&
+                ($this->GetValue("AllSwitch") == false) &&
+                $dark
+            ) {
+                IPS_LogMessage("Illumination", "Turn Illumination ON Evening");
+                $this->SwitchDevices(true);
+                return;
+            }
+
+            if ($eveningofftime["hour"] <= 3) {
+                return;
+            } else {
+                if (
+                    !$this->InTimeSlot($afternoonontime, $eveningofftime) &&
+                    ($this->GetValue("AllSwitch") == true) &&
+                    !$present
+                ) {
+                    IPS_LogMessage("Illumination", "Turn Illumination OFF Evening");
+                    $this->SwitchDevices(false);
+                    return;
+                }
+            }
+        }
+
+        //Night
+        if ($currenthour >= 00 && $currenthour <= 3) {
+            $minnight = array("hour" => "0", "minute" => "0", "second" => "1");
+            if (
+                !$this->InTimeSlot($minnight, $eveningofftime) &&
+                ($this->GetValue("AllSwitch") == true) &&
+                !$present
+            ) {
+                IPS_LogMessage("Illumination", "Turn Illumination OFF Evening(Night)");
+                $this->SwitchDevices(false);
+                return;
+            }
+        }
+    }
+
+
+    function InTimeSlot(array $starttime, array $endtime)
+    {
+        $currenttime = array("hour" => date("H"), "minute" => date("i"), "second" => date("s"));
+        //$currenttime = array("hour" => 0, "minute" => date("i"), "second" => date("s"));
+
+
+        if ((($currenttime["hour"] == $starttime["hour"] && $currenttime["minute"] >= $starttime["minute"]) ||
+                ($currenttime["hour"] == $endtime["hour"] && $currenttime["minute"] <= $endtime["minute"])) ||
+            ($currenttime["hour"] >= $starttime["hour"] && $currenttime["hour"] <= $endtime["hour"])
+        ) {
+            return true;
+        } else {
+            return false;
+        };
+    }
+
+
+
     /**
      * This Function are providing the Actions To Switch the devices On or Off
      * Depanding on the Given $action.
@@ -50,7 +178,6 @@ class Illumination extends IPSModule
     {
         $arrString = $this->ReadPropertyString("Devices");
         $json = json_decode($arrString);
-
 
         //echo $json[0]->InstanceID;
         foreach ($json as $device) {
@@ -92,39 +219,39 @@ class Illumination extends IPSModule
                 $this->SwitchDevices(true);
                 IPS_LogMessage("Illumination", "Switch Devices On by remote");
                 break;
+            case 1001:
+                $this->SwitchDevices(true);
+                IPS_LogMessage("Illumination", "Switch Devices On by remote");
+                break;
             case 1002:
-                //NOT IMPLEMENTED
+                $this->SwitchDevices(true);
+                IPS_LogMessage("Illumination", "Switch Devices On by remote");
                 break;
             case 1003:
-                //NOT IMPLEMENTED
+                $this->SwitchDevices(true);
+                IPS_LogMessage("Illumination", "Switch Devices On by remote");
                 break;
             case 2000:
                 //NOT IMPLEMENTED
                 break;
-            case 2002:
-                //NOT IMPLEMENTED
-                break;
-            case 2003:
-                //NOT IMPLEMENTED
-                break;
             case 3000:
-                //NOT IMPLEMENTED
-                break;
-            case 3002:
-                //NOT IMPLEMENTED
-                break;
-            case 3003:
                 //NOT IMPLEMENTED
                 break;
             case 4000:
                 $this->SwitchDevices(false);
                 IPS_LogMessage("Illumination", "Switch Devices Off by remote");
                 break;
+            case 4001:
+                $this->SwitchDevices(false);
+                IPS_LogMessage("Illumination", "Switch Devices Off by remote");
+                break;
             case 4002:
-                //NOT IMPLEMENTED
+                $this->SwitchDevices(false);
+                IPS_LogMessage("Illumination", "Switch Devices Off by remote");
                 break;
             case 4003:
-                //NOT IMPLEMENTED
+                $this->SwitchDevices(false);
+                IPS_LogMessage("Illumination", "Switch Devices Off by remote");
                 break;
         }
     }

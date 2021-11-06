@@ -73,7 +73,33 @@
             "type" : "NumberSpinner" , 
             "name" : "DLUpdateInterval" ,  
             "caption" : "Daylight Pol Interval in Seconds"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "DarkLuxValue" ,  
+            "caption" : "Dark Value (Lux)"  
+        },
+        {  
+            "type" : "SelectTime" , 
+            "name" : "MorningOnTime" ,  
+            "caption" : "Morning On Time"  
+        },
+        {  
+            "type" : "SelectTime" , 
+            "name" : "MorningMaxOffTime" ,  
+            "caption" : "Morning Off Time"  
+        },
+        {  
+            "type" : "SelectTime" , 
+            "name" : "AfternoonSwitchTime" ,  
+            "caption" : "Afternoon On Time"  
+        },
+        {  
+            "type" : "SelectTime" , 
+            "name" : "AfternoonMaxOnTime" ,  
+            "caption" : "Afternoon Off Time"  
         }
+
 
 
 

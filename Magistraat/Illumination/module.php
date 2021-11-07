@@ -73,7 +73,7 @@ class Illumination extends IPSModule
         if (($currentlux <= $this->ReadPropertyFloat("DarkLuxValue")) && (!$dark)) {
             $this->WriteAttributeBoolean("ToDark", true);
             IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
-        } else if ($dark) {
+        } else if ($dark && $currentlux >= ($this->ReadPropertyFloat("DarkLuxValue"))) {
             $this->WriteAttributeBoolean("ToDark", false);
             IPS_LogMessage("Illumination", "Set ToDark Attrubute to False. Current lux : $currentlux");
         }
@@ -95,8 +95,14 @@ class Illumination extends IPSModule
                 return;
             }
 
-            if ((!$dark && (($this->GetValue("AllSwitch") == true))) ||
-                (!$this->InTimeSlot($morningontime, $morningofftime) &&
+            if (!$dark && $currentlux <= ($this->ReadPropertyFloat("DarkLuxValue") * 2.1)) {
+                $dark = true;
+            }
+
+            if (
+                (!$dark &&
+                    (($this->GetValue("AllSwitch") == true))) ||
+                ($this->InTimeSlot($morningontime, $morningofftime) == false &&
                     ($this->GetValue("AllSwitch") == true))
             ) {
                 IPS_LogMessage("Illumination", "Turn Illumination OFF Morning");

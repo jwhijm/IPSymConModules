@@ -1,0 +1,15 @@
+{
+    "id": "{159FBEC7-8788-8FD6-D3AB-0FA9E6A7A9DE}",
+    "name": "Toon",
+    "type": 3,
+    "vendor": "Hijmering",
+    "aliases":
+    [
+        "Toon"
+    ],
+    "url": "https://www.symcon.de",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "TO"
+}

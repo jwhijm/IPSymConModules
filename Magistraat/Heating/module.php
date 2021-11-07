@@ -101,6 +101,7 @@ class Heating extends IPSModule
         $lowTemp = $this->GetValue("LowTemp");
         $maxtemp = $this->ReadPropertyInteger("MaxTemp");
         $minTemp = $this->ReadPropertyInteger("MinTemp");
+        $currenthour = date("H");
 
         if ($currenttemp <= $minTemp) {
             if ($heating == false && $this->SetHeating(true)) {
@@ -142,11 +143,14 @@ class Heating extends IPSModule
         }
 
         if ($currenttemp <= $lowTemp && $heating == false) {
-            if ($this->SetHeating(true)) {
+            if ($currenthour >= 0 && $currenthour <= 5) {
+                IPS_LogMessage("Heating", "Buffer below set temp, Prevent On in the night");
+                return;
+            } else if ($this->SetHeating(true)) {
                 IPS_LogMessage("Heating", "Set Heating ON Buffer below set temp");
                 $this->SetValue("Heating", true);
+                return;
             }
-            return;
         }
 
         if ($currenttemp >= $highTemp && $heating == true && $manual == false) {

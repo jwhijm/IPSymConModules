@@ -85,9 +85,10 @@ class Illumination extends IPSModule
         $currenthour = date("H");
 
         //Morning
-        if ($currenthour >= 4 && $currenthour <= 12) {
+        if ($currenthour >= 4 && $currenthour <= 11) {
             if (
                 $this->InTimeSlot($morningontime, $morningofftime) &&
+                $dark &&
                 ($this->GetValue("AllSwitch") == false)
             ) {
                 IPS_LogMessage("Illumination", "Turn Illumination ON Morning");
@@ -112,7 +113,7 @@ class Illumination extends IPSModule
         }
 
         //Evening
-        if ($currenthour >= 12 && $currenthour <= 23) {
+        if ($currenthour >= 12 && $currenthour <= 21) {
             $maxevening = array("hour" => "23", "minute" => "59", "second" => "59");
             if (
                 $this->InTimeSlot($afternoonontime, $maxevening) &&
@@ -123,14 +124,15 @@ class Illumination extends IPSModule
                 $this->SwitchDevices(true);
                 return;
             }
+        }
+        if ($currenthour >= 22 && $currenthour <= 23) {
 
             if ($eveningofftime["hour"] <= 3) {
                 return;
             } else {
                 if (
                     !$this->InTimeSlot($afternoonontime, $eveningofftime) &&
-                    ($this->GetValue("AllSwitch") == true) &&
-                    !$present
+                    ($this->GetValue("AllSwitch") == true)
                 ) {
                     IPS_LogMessage("Illumination", "Turn Illumination OFF Evening");
                     $this->SwitchDevices(false);
@@ -144,8 +146,7 @@ class Illumination extends IPSModule
             $minnight = array("hour" => "0", "minute" => "0", "second" => "1");
             if (
                 !$this->InTimeSlot($minnight, $eveningofftime) &&
-                ($this->GetValue("AllSwitch") == true) &&
-                !$present
+                ($this->GetValue("AllSwitch") == true)
             ) {
                 IPS_LogMessage("Illumination", "Turn Illumination OFF Evening(Night)");
                 $this->SwitchDevices(false);

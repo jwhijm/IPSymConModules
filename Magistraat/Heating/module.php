@@ -21,6 +21,8 @@ class Heating extends IPSModule
         $this->RegisterAttributeBoolean("Manual", false);
         $this->RegisterAttributeString("LastNotificationSend", "0");
 
+        $this->RegisterPropertyInteger("HeatingPump", 0);
+
         $this->RegisterPropertyInteger("BufferVar", 0);
         $this->RegisterPropertyInteger("TelegramVar", 0);
 
@@ -94,6 +96,7 @@ class Heating extends IPSModule
 
         $manual = $this->ReadAttributeBoolean("Manual");
         $heating = $this->GetValue("Heating");
+        $heatingpump = GetValueBoolean($this->ReadPropertyInteger("HeatingPump"));
 
         $currenttemp = $this->GetValue("CurrentTemp");
 
@@ -153,7 +156,7 @@ class Heating extends IPSModule
             }
         }
 
-        if ($currenttemp >= $highTemp && $heating == true && $manual == false) {
+        if ($currenttemp >= $highTemp && $heating == true && $manual == false && $heatingpump == false) {
             if ($this->SetHeating(false)) {
                 IPS_LogMessage("Heating", "Set Heating OFF Buffer above set temp");
                 $this->SetValue("Heating", false);

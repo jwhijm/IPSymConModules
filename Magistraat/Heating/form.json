@@ -10,6 +10,11 @@
             "name" : "TelegramVar" , 
             "caption" : "TelegramBot Instance" 
         },
+        {
+            "type" : "SelectVariable" , 
+            "name" : "HeatingPump" , 
+            "caption" : "Heating Pump var" 
+        },
         {  
             "type" : "NumberSpinner", 
             "name" : "MaxTemp",  

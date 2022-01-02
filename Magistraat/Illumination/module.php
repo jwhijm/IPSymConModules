@@ -65,24 +65,32 @@ class Illumination extends IPSModule
      */
     public function Automation()
     {
+
         //return;
+        $currenthour = date("H");
         $currentlux = $this->GetValue("Totallx");
         $dark = $this->ReadAttributeBoolean("ToDark");
         $present = $this->ReadAttributeBoolean("Present");
 
-        if (($currentlux <= $this->ReadPropertyFloat("DarkLuxValue")) && (!$dark)) {
+        if ($currenthour > 6 && $currenthour < 21) {
+            if (($currentlux <= $this->ReadPropertyFloat("DarkLuxValue")) && (!$dark)) {
+                $this->WriteAttributeBoolean("ToDark", true);
+                IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
+            } else if ($dark && $currentlux >= ($this->ReadPropertyFloat("DarkLuxValue"))) {
+                $this->WriteAttributeBoolean("ToDark", false);
+                IPS_LogMessage("Illumination", "Set ToDark Attrubute to False. Current lux : $currentlux");
+            }
+        } else {
             $this->WriteAttributeBoolean("ToDark", true);
-            IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
-        } else if ($dark && $currentlux >= ($this->ReadPropertyFloat("DarkLuxValue"))) {
-            $this->WriteAttributeBoolean("ToDark", false);
-            IPS_LogMessage("Illumination", "Set ToDark Attrubute to False. Current lux : $currentlux");
         }
+
+
 
         $morningontime = json_decode($this->ReadPropertyString("MorningOnTime"), true);
         $morningofftime = json_decode($this->ReadPropertyString("MorningMaxOffTime"), true);
         $afternoonontime = json_decode($this->ReadPropertyString("AfternoonSwitchTime"), true);
         $eveningofftime = json_decode($this->ReadPropertyString("AfternoonMaxOnTime"), true);
-        $currenthour = date("H");
+
 
         //Morning
         if ($currenthour >= 4 && $currenthour <= 11) {

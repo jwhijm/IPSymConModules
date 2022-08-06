@@ -1,0 +1,15 @@
+{
+    "id": "{44C02BFB-2C39-F4ED-E051-5E0A54956D9F}",
+    "name": "Irrigation",
+    "type": 3,
+    "vendor": "Hijmering",
+    "aliases":
+    [
+        "Tuin Irrigatie"
+    ],
+    "url": "https://www.symcon.de",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "IR"
+}

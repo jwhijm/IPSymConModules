@@ -1,0 +1,50 @@
+{ 
+    "elements": [
+        {
+            "type" : "SelectVariable" , 
+            "name" : "RainMeter" , 
+            "caption" : "RainMeasurment 24h" 
+        },
+        {
+            "type" : "SelectVariable" , 
+            "name" : "RainMeterHour" , 
+            "caption" : "RainMeasurment 1h" 
+        },
+        {
+            "type" : "SelectVariable" , 
+            "name" : "TodayMaxTemp" , 
+            "caption" : "TodayMaxTemp" 
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "RainThreshold" ,  
+            "caption" : "Rain Threshold in mm"  
+        },
+        {
+            "type" : "SelectInstance" , 
+            "name" : "WaterSwitch" , 
+            "caption" : "Water Switch" 
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "TempThreshold" ,  
+            "caption" : "Temparature Threshold in C"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "MaxOntime" ,  
+            "caption" : "Max On time"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "UpdateInterval" ,  
+            "caption" : "Update Interval in Seconds"  
+        },
+        {
+            "type" : "SelectInstance" , 
+            "name" : "TelegramVar" , 
+            "caption" : "TelegramBot Instance" 
+        }
+            
+    ]
+}

@@ -11,6 +11,11 @@
             "caption" : "RainMeasurment 1h" 
         },
         {
+            "type" : "SelectInstance" , 
+            "name" : "WaterSwitch" , 
+            "caption" : "Water Switch" 
+        },
+        {
             "type" : "SelectVariable" , 
             "name" : "TodayMaxTemp" , 
             "caption" : "TodayMaxTemp" 
@@ -20,11 +25,6 @@
             "name" : "RainThreshold" ,  
             "caption" : "Rain Threshold in mm"  
         },
-        {
-            "type" : "SelectInstance" , 
-            "name" : "WaterSwitch" , 
-            "caption" : "Water Switch" 
-        },
         {  
             "type" : "NumberSpinner" , 
             "name" : "TempThreshold" ,  
@@ -33,12 +33,21 @@
         {  
             "type" : "NumberSpinner" , 
             "name" : "MaxOntime" ,  
-            "caption" : "Max On time"  
+            "caption" : "Max On time in Seconds"  
+        },
+        {  
+            "type" : "NumberSpinner" , 
+            "name" : "WaterCoolDown" ,  
+            "caption" : "Switching Cooldown time in Seconds"  
+        },
+        {   "type": "CheckBox", 
+            "name": "NightTime", 
+            "caption": "Turn On Only during NightTime 1h - 6h" 
         },
         {  
             "type" : "NumberSpinner" , 
             "name" : "UpdateInterval" ,  
-            "caption" : "Update Interval in Seconds"  
+            "caption" : "Update Interval in Seconds (Keep In mind That this  need to  be bigger than Max On Time!!)"  
         },
         {
             "type" : "SelectInstance" , 

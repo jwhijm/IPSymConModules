@@ -11,6 +11,8 @@ class Irrigation extends IPSModule
         $this->RegisterPropertyInteger("RainThreshold", 0);
         $this->RegisterPropertyInteger("TodayMaxTemp", 0);
         $this->RegisterPropertyInteger("TempThreshold", 15);
+        $this->RegisterPropertyBoolean("NightTime", false);
+        $this->RegisterPropertyInteger("WaterCoolDown", 600);
 
         $this->RegisterPropertyInteger("WaterSwitch", 0);
         $this->RegisterPropertyInteger("MaxOntime", 6000);
@@ -94,16 +96,24 @@ class Irrigation extends IPSModule
             return;
         }
 
-        if ($waterSwitchStateTime >= ($this->ReadPropertyInteger("MaxOntime") + 600)) {
+        if ($waterSwitchStateTime >= ($this->ReadPropertyInteger("MaxOntime") + 600) && $waterSwitchState == true) {
             Z2D_SwitchMode($this->ReadPropertyInteger("WaterSwitch"), false);
             IPS_LogMessage("Irrigation", "WaterSwitch Is Still ON!!");
-            $this->SendTelegramNotification("WaterSwitch Is Still ON!! Time last update: " . $waterSwitchStateTime . "%", 600);
+            $this->SendTelegramNotification("WaterSwitch Is Still ON!! Time last update: " . $waterSwitchStateTime, 600);
         }
 
         switch ($waterSwitchState) {
             case false:
 
-                if ($action == true && $waterSwitchStateTime < 28800) {
+                if ($this->ReadPropertyBoolean("NightTime") == True) {
+                    $currenthour = date("H");
+                    if ($currenthour < 1 || $currenthour > 6) {
+                        IPS_LogMessage("Irrigation", "Not Night Time");
+                        return;
+                    }
+                }
+
+                if ($action == true && $waterSwitchStateTime < $this->ReadPropertyInteger("WaterCoolDown")) {
                     IPS_LogMessage("Irrigation", "Switch Cooldown not reached");
                     return;
                 }
@@ -123,12 +133,12 @@ class Irrigation extends IPSModule
             default:
                 if ($raincurrenthour == true) {
                     Z2D_SwitchMode($this->ReadPropertyInteger("WaterSwitch"), false);
-                    IPS_LogMessage("Irrigation", "Switch ZigBee Device Water Off because of rain");
+                    IPS_LogMessage("Irrigation", "Switch ZigBee Device Water Off - Because of rain");
                 }
 
                 if ($waterSwitchStateTime >= $this->ReadPropertyInteger("MaxOntime")) {
                     Z2D_SwitchMode($this->ReadPropertyInteger("WaterSwitch"), false);
-                    IPS_LogMessage("Irrigation", "Switch ZigBee Device Water Off Maxtime Exceeded");
+                    IPS_LogMessage("Irrigation", "Switch ZigBee Device Water Off - Maxtime Exceeded");
                 }
 
                 break;

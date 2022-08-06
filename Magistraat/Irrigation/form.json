@@ -11,6 +11,11 @@
             "caption" : "RainMeasurment 1h" 
         },
         {
+            "type" : "SelectVariable" , 
+            "name" : "WeatherForcast" , 
+            "caption" : "WeatherForcast (Amount of Rain Upcomming)" 
+        },
+        {
             "type" : "SelectInstance" , 
             "name" : "WaterSwitch" , 
             "caption" : "Water Switch" 

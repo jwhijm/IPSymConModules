@@ -8,6 +8,8 @@ class Irrigation extends IPSModule
         parent::Create();
         $this->RegisterPropertyInteger("RainMeter", 0);
         $this->RegisterPropertyInteger("RainMeterHour", 0);
+        $this->RegisterPropertyInteger("WeatherForcast", 0);
+
         $this->RegisterPropertyInteger("RainThreshold", 0);
         $this->RegisterPropertyInteger("TodayMaxTemp", 0);
         $this->RegisterPropertyInteger("TempThreshold", 15);
@@ -51,11 +53,13 @@ class Irrigation extends IPSModule
         $currentRainFall = GetValueFloat($this->ReadPropertyInteger("RainMeter"));
         //$currentRainFall = 4.0;
         $todayMaxTemp = GetValue($this->ReadPropertyInteger("TodayMaxTemp"));
+        $predictedRain = GetValue($this->ReadPropertyInteger("WeatherForcast"));
         $waterNeeded = false;
 
         if (
             $todayMaxTemp > $this->ReadPropertyInteger("TempThreshold") &&
-            $currentRainFall <  $this->ReadPropertyInteger("RainThreshold")
+            $currentRainFall <  $this->ReadPropertyInteger("RainThreshold") &&
+            $predictedRain < 10
         ) {
             $waterNeeded = true;
         }

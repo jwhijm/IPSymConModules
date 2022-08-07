@@ -31,6 +31,7 @@ class Illumination extends IPSModule
 
         $this->RegisterAttributeBoolean("ToDark", false);
         $this->RegisterAttributeBoolean("Present", false);
+        $this->RegisterAttributeInteger("Darklastupdate", time());
 
         //$this->EnableAction(11581);
 
@@ -65,119 +66,183 @@ class Illumination extends IPSModule
      */
     public function Automation()
     {
-
-        //return;
         $currenthour = date("H");
-        $currentlux = $this->GetValue("Totallx");
-        $dark = $this->ReadAttributeBoolean("ToDark");
+
         $present = $this->ReadAttributeBoolean("Present");
 
-        if ($currenthour > 6 && $currenthour < 21) {
-            if (($currentlux <= $this->ReadPropertyFloat("DarkLuxValue")) && (!$dark)) {
-                $this->WriteAttributeBoolean("ToDark", true);
-                IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
-            } else if ($dark && $currentlux >= ($this->ReadPropertyFloat("DarkLuxValue"))) {
-                $this->WriteAttributeBoolean("ToDark", false);
-                IPS_LogMessage("Illumination", "Set ToDark Attrubute to False. Current lux : $currentlux");
-            }
-        } else {
-            $this->WriteAttributeBoolean("ToDark", true);
+        switch ($currenthour) {
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+                $this->Morning();
+                break;
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+            case 20:
+            case 21:
+                $this->evening();
+                break;
+            case 22:
+            case 23:
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                $this->Night();
+                break;
         }
+    }
 
-
+    function Morning()
+    {
+        $this->SwitchOnLux();
 
         $morningontime = json_decode($this->ReadPropertyString("MorningOnTime"), true);
         $morningofftime = json_decode($this->ReadPropertyString("MorningMaxOffTime"), true);
-        $afternoonontime = json_decode($this->ReadPropertyString("AfternoonSwitchTime"), true);
-        $eveningofftime = json_decode($this->ReadPropertyString("AfternoonMaxOnTime"), true);
+        $dark = $this->ReadAttributeBoolean("ToDark");
 
-
-        //Morning
-        if ($currenthour >= 4 && $currenthour <= 11) {
-            if (
-                $this->InTimeSlot($morningontime, $morningofftime) &&
-                $dark &&
-                ($this->GetValue("AllSwitch") == false)
-            ) {
-                IPS_LogMessage("Illumination", "Turn Illumination ON Morning");
-                $this->SwitchDevices(true);
-                return;
-            }
-
-            if (!$dark && $currentlux <= ($this->ReadPropertyFloat("DarkLuxValue") * 2.1)) {
-                $dark = true;
-            }
-
-            if (
-                (!$dark &&
-                    (($this->GetValue("AllSwitch") == true))) ||
-                ($this->InTimeSlot($morningontime, $morningofftime) == false &&
-                    ($this->GetValue("AllSwitch") == true))
-            ) {
-                IPS_LogMessage("Illumination", "Turn Illumination OFF Morning");
-                $this->SwitchDevices(false);
-                return;
-            }
+        if (
+            $this->InTimeSlot($morningontime, $morningofftime) &&
+            $this->GetValue("AllSwitch") == false &&
+            $dark
+        ) {
+            IPS_LogMessage("Illumination", "Turn Illumination ON Morning");
+            $this->SwitchDevices(true);
+            return;
         }
 
-        //Evening
-        if ($currenthour >= 12 && $currenthour <= 21) {
-            $maxevening = array("hour" => "23", "minute" => "59", "second" => "59");
-            if (
-                $this->InTimeSlot($afternoonontime, $maxevening) &&
-                ($this->GetValue("AllSwitch") == false) &&
-                $dark
-            ) {
-                IPS_LogMessage("Illumination", "Turn Illumination ON Evening");
-                $this->SwitchDevices(true);
-                return;
-            }
-        }
-        if ($currenthour >= 22 && $currenthour <= 23) {
-
-            if ($eveningofftime["hour"] <= 3) {
-                return;
-            } else {
-                if (
-                    !$this->InTimeSlot($afternoonontime, $eveningofftime) &&
-                    ($this->GetValue("AllSwitch") == true)
-                ) {
-                    IPS_LogMessage("Illumination", "Turn Illumination OFF Evening");
-                    $this->SwitchDevices(false);
-                    return;
-                }
-            }
+        if (
+            $this->InTimeSlot($morningontime, $morningofftime) == false &&
+            $this->GetValue("AllSwitch") == true
+        ) {
+            IPS_LogMessage("Illumination", "Turn Illumination OFF Morning Outside TimeSlot");
+            $this->SwitchDevices(false);
+            return;
         }
 
-        //Night
-        if ($currenthour >= 00 && $currenthour <= 3) {
-            $minnight = array("hour" => "0", "minute" => "0", "second" => "1");
-            if (
-                !$this->InTimeSlot($minnight, $eveningofftime) &&
-                ($this->GetValue("AllSwitch") == true)
-            ) {
-                IPS_LogMessage("Illumination", "Turn Illumination OFF Evening(Night)");
-                $this->SwitchDevices(false);
-                return;
-            }
+        if (!$dark &&  $this->GetValue("AllSwitch") == true) {
+            IPS_LogMessage("Illumination", "Turn Illumination OFF Morning Lux To High");
+            $this->SwitchDevices(false);
+            return;
         }
     }
 
 
+    function Evening()
+    {
+        $this->SwitchOnLux();
+
+        $afternoonontime = json_decode($this->ReadPropertyString("AfternoonSwitchTime"), true);
+        $eveningofftime = json_decode($this->ReadPropertyString("AfternoonMaxOnTime"), true);
+        $dark = $this->ReadAttributeBoolean("ToDark");
+
+        if (
+            $this->InTimeSlot($afternoonontime, $eveningofftime) &&
+            ($this->GetValue("AllSwitch") == false) &&
+            $dark
+        ) {
+            IPS_LogMessage("Illumination", "Turn Illumination ON Evening");
+            $this->SwitchDevices(true);
+            return;
+        }
+    }
+
+    function Night()
+    {
+        $afternoonontime = json_decode($this->ReadPropertyString("AfternoonSwitchTime"), true);
+        $eveningofftime = json_decode($this->ReadPropertyString("AfternoonMaxOnTime"), true);
+
+        if (
+            !$this->InTimeSlot($afternoonontime, $eveningofftime) &&
+            ($this->GetValue("AllSwitch") == true)
+        ) {
+            IPS_LogMessage("Illumination", "Turn Illumination OFF Evening(Night)");
+            $this->SwitchDevices(false);
+            return;
+        }
+    }
+
+    function SwitchOnLux()
+    {
+        $currentlux = $this->GetValue("Totallx");
+
+        $darkthreshold = $this->ReadPropertyFloat("DarkLuxValue");
+        $dark = $this->ReadAttributeBoolean("ToDark");
+
+        $darkSwitchThreshold = time() - $this->ReadAttributeInteger("Darklastupdate");
+
+        if ($darkSwitchThreshold <= 120) {
+            return;
+        }
+
+        if (($currentlux <= $darkthreshold) && (!$dark)) {
+            $this->WriteAttributeBoolean("ToDark", true);
+
+            $this->WriteAttributeInteger("Darklastupdate", time());
+
+            IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
+        } else if ($dark && $currentlux >= $darkthreshold) {
+            $this->WriteAttributeBoolean("ToDark", false);
+
+            $this->WriteAttributeInteger("Darklastupdate", time());
+            IPS_LogMessage("Illumination", "Set ToDark Attrubute to False. Current lux : $currentlux");
+        }
+    }
+
     function InTimeSlot(array $starttime, array $endtime)
     {
         $currenttime = array("hour" => date("H"), "minute" => date("i"), "second" => date("s"));
-        //$currenttime = array("hour" => 0, "minute" => date("i"), "second" => date("s"));
 
+        //$currenttime = array("hour" => 23, "minute" => 26, "second" => 4);
 
-        if ((($currenttime["hour"] == $starttime["hour"] && $currenttime["minute"] >= $starttime["minute"]) ||
-                ($currenttime["hour"] == $endtime["hour"] && $currenttime["minute"] <= $endtime["minute"])) ||
-            ($currenttime["hour"] >= $starttime["hour"] && $currenttime["hour"] <= $endtime["hour"])
-        ) {
+        if ($starttime["hour"] - $endtime["hour"] > 0) {
+
+            if ($currenttime["hour"] <= $endtime["hour"]) {
+                if ($currenttime["minute"] > $endtime["minute"]) {
+
+                    return false;
+                }
+
+                return true;
+            }
+
+            $endtime = array("hour" => "24", "minute" => "0", "second" => "0");
+        }
+
+        if ($currenttime["hour"] >= $starttime["hour"] && $currenttime["hour"] <= $endtime["hour"]) {
+
+            if ($currenttime["hour"] == $starttime["hour"]) {
+                if ($currenttime["minute"] < $starttime["minute"]) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            if ($currenttime["hour"] == $endtime["hour"]) {
+                if ($currenttime["minute"] > $endtime["minute"]) {
+
+                    return false;
+                }
+
+                return true;
+            }
+
             return true;
-        } else {
-            return false;
-        };
+        }
+
+        return false;
     }
 
 
@@ -283,14 +348,23 @@ class Illumination extends IPSModule
         $json = json_decode($arrString);
         $totallx = 0.0;
 
-        //echo $json[0]->InstanceID;
+        $sensorCount = count($json);
+
         foreach ($json as $device) {
             $value = GetValueFloat($device->VarID);
+            $lastUpdate = time() - IPS_GetVariable($device->VarID)["VariableChanged"];
+
+            if ($lastUpdate > 43200) {
+                $sensorCount = $sensorCount - 1;
+                IPS_LogMessage("Illumination", "Lux Sensor not updated for 12h " . $device->VarID . " Ignored");
+                continue;
+            }
+
             $weight = $device->Weight;
             $totallx += $value *  $weight;
         }
 
-        $totallx = $totallx / count($json);
+        $totallx = $totallx / $sensorCount;
         $this->SetValue("Totallx", $totallx);
     }
 }

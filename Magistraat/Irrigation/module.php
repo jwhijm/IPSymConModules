@@ -48,10 +48,8 @@ class Irrigation extends IPSModule
 
     public function MonitorRain()
     {
-        IPS_LogMessage("Irrigation", "Evaluate Rain");
 
         $currentRainFall = GetValueFloat($this->ReadPropertyInteger("RainMeter"));
-        //$currentRainFall = 4.0;
         $todayMaxTemp = GetValue($this->ReadPropertyInteger("TodayMaxTemp"));
         $predictedRain = GetValue($this->ReadPropertyInteger("WeatherForcast"));
         $waterNeeded = false;
@@ -118,7 +116,7 @@ class Irrigation extends IPSModule
                 }
 
                 if ($action == true && $waterSwitchStateTime < $this->ReadPropertyInteger("WaterCoolDown")) {
-                    IPS_LogMessage("Irrigation", "Switch Cooldown not reached");
+                    //IPS_LogMessage("Irrigation", "Switch Cooldown not reached");
                     return;
                 }
 

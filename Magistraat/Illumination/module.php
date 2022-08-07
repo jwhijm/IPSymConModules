@@ -182,9 +182,15 @@ class Illumination extends IPSModule
 
         $darkSwitchThreshold = time() - $this->ReadAttributeInteger("Darklastupdate");
 
+        if (date("H") >= 5 && date("H") <= 7) {
+            $darkthreshold = $darkthreshold + 25;
+        }
+
         if ($darkSwitchThreshold <= 120) {
             return;
         }
+
+        //Check minimal Value???? (Light vs natuurlicht...)
 
         if (($currentlux <= $darkthreshold) && (!$dark)) {
             $this->WriteAttributeBoolean("ToDark", true);
@@ -192,7 +198,12 @@ class Illumination extends IPSModule
             $this->WriteAttributeInteger("Darklastupdate", time());
 
             IPS_LogMessage("Illumination", "Set ToDark Attrubute to True. Current lux : $currentlux ");
-        } else if ($dark && $currentlux >= $darkthreshold) {
+        }
+
+
+
+
+        if ($dark && $currentlux >= $darkthreshold) {
             $this->WriteAttributeBoolean("ToDark", false);
 
             $this->WriteAttributeInteger("Darklastupdate", time());
